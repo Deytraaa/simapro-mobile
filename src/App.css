@@ -1,0 +1,140 @@
+/* Custom Tab Bar Styles */
+.custom-tab-bar {
+  --background: #8F87F1;
+  --border: none;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  height: 70px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  margin-bottom: 40px;
+}
+
+
+
+
+
+.custom-tab-button {
+  flex: 0 0 auto;
+  background-color: #E9A5F1;
+  border-radius: 16px;
+  padding: 4px 8px;
+  margin: 4px;
+  color: black;
+  font-weight: bold;
+  transition: background-color 0.3s;
+  white-space: nowrap;
+}
+
+.custom-tab-button[aria-selected="true"] {
+  --background: rgba(56, 128, 255, 0.1);
+  border-radius: 12px;
+  margin: 4px;
+  transition: background-color 0.3s;
+}
+
+.tab-icon {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.tab-label {
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+
+/* Active tab indicator
+.custom-tab-button[aria-selected="true"]::after {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 3px;
+  background-color: #3880ff;
+  margin: 4px auto 0;
+  border-radius: 2px;
+} */
+
+  /* Saat aktif */
+  .custom-tab-button.tab-selected,
+  .custom-tab-button.ion-selected,
+  .icon {
+    background-color: #4b2673;
+    color: white;
+  }
+
+    /* Hover effect */
+    .custom-tab-button:hover {
+      background-color: #4b2673;
+      color: white;
+      cursor: pointer;
+    }
+    .app-toolbar {
+      --background: #b388f5;
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+    }
+    
+    .logo-section {
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo {
+      width: 40px;
+      height: 40px;
+    }
+    
+    .header-text {
+      margin-left: 10px;
+      color: white;
+    }
+    
+    .app-title {
+      font-weight: bold;
+      font-size: 18px;
+    }
+    
+    .app-subtitle {
+      font-size: 12px;
+    }
+    
+    .profile-container {
+      position: relative;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    
+    .profile-pic {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+    
+    .dropdown-menu {
+      position: absolute;
+      right: 0;
+      top: 50px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      width: 120px;
+    }
+    
+    .dropdown-item {
+      padding: 10px;
+      color: #333;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .dropdown-item:last-child {
+      border-bottom: none;
+    }
+    
+    .dropdown-item:hover {
+      background-color: #f0f0f0;
+    }
+    

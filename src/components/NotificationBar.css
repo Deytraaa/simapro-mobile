@@ -1,0 +1,33 @@
+/* src/components/NotificationBar.css */
+.notification-bar {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  
+  .notification-bar.success {
+    background-color: #4CAF50;
+  }
+  
+  .notification-bar.error {
+    background-color: #F44336;
+  }
+  
+  .notification-bar button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  

@@ -1,0 +1,113 @@
+.profile-header {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 24px;
+  }
+  
+  .profile-card {
+    background: #a288f4;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 500px;
+    margin: 0 auto;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+  
+  .profile-image-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .profile-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 8px;
+  }
+  
+  .choose-file-btn {
+    background-color: #4c2a85;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  
+  .form-group {
+    margin-bottom: 16px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+    color: #fff;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    font-size: 14px;
+  }
+  
+  .button-group {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .logout-btn,
+  .save-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .logout-btn {
+    background-color: #f6aafb;
+    color: white;
+  }
+  
+  .save-btn {
+    background-color: #4c2a85;
+    color: white;
+  }
+  
+  /* Header logo */
+  .logo {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+  }
+  
+  .header-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .app-title {
+    font-weight: bold;
+    font-size: 18px;
+    color: white;
+  }
+  
+  .app-subtitle {
+    font-size: 12px;
+    color: white;
+  }
+  
+  .profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  

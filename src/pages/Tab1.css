@@ -1,0 +1,371 @@
+ion-toolbar {
+    --background: #a388f2;
+    --color: white;
+    --text-align: left;
+    display: flex;
+    align-items: center;
+  }
+  
+  ion-content {
+    --background: white;
+    --color: black;
+  }
+  
+  ion-title {
+    font-weight: bold;
+    font-size: large;
+  }
+  
+  .logo {
+    width: 70px;
+    height: 70px;
+    margin-right: 10px;
+  }
+  
+  .header-text {
+    display: flex;
+    flex-direction: column;
+    color: white;
+  }
+  
+  .app-title {
+    font-weight: bold;
+    font-size: 18px;
+  }
+  
+  .app-subtitle {
+    font-size: 12px;
+  }
+  
+  .profile-pic {
+    width: 60px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .product-section {
+    padding: 16px;
+  }
+  
+  .product-section h2 {
+    font-weight: bold;
+    margin-bottom: 16px;
+  }
+  
+  .search-add {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    padding: auto;
+  }
+  
+  .search-add input {
+    background-color: #D9D9D9;
+    width: 160px;
+    padding: 8px;
+    border-radius: 8px;
+    border: none;
+    margin-left: auto; /* Inilah yang menggeser ke kanan */
+  }
+  
+  .add-button {
+    background-color: #a388f2;
+    color: white;
+    font-size: 35px;
+    border: none;
+    border-radius: 5px;
+    padding: 0 16px;
+    cursor: pointer;
+  }
+  
+  .product-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .product-table th,
+  .product-table td {
+    border: 1px solid #ccc;
+    padding: 12px;
+    text-align: left;
+  }
+  
+  .product-table th {
+    background-color: #a388f2;
+    color: white;
+  }
+  
+  .product-table tr:nth-child(even) {
+    background-color: #f0e6ff;
+  }
+  
+  .product-table tr:nth-child(odd) {
+    background-color: #fcdfff;
+  }
+  
+
+  /* ======================== */
+/* FORM CONTAINER */
+.form-container {
+    background-color: #a48ff2; /* ungu pastel */
+    padding: 20px;
+    border-radius: 12px;
+    max-width: 480px;
+    margin: 40px auto 0 auto; /* naik ke atas */
+  }
+  
+  /* ======================== */
+  /* FORM LABEL */
+  ion-label {
+    font-weight: bold;
+    color: white;
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+  
+  /* ======================== */
+  /* FORM INPUT & TEXTAREA */
+  ion-input,
+  ion-textarea {
+    --background: #e6e6e6;     /* abu muda */
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --padding-top: 10px;
+    --padding-bottom: 10px;
+    --border-radius: 10px;
+    font-size: 15px;
+    color: #333;
+  }
+  
+  /* ======================== */
+  /* FORM ITEM WRAPPER */
+  ion-item {
+    --background: transparent;
+    --inner-padding-end: 0;
+    --padding-start: 0;
+    --padding-end: 0;
+    --highlight-color-focused: transparent;
+    margin-bottom: 15px;
+  }
+  
+  /* ======================== */
+  /* BUTTONS */
+  ion-button {
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 10px 20px;
+  }
+  
+  ion-button[color="primary"] {
+    --background: #5b3d94;
+    --background-activated: #4a2f78;
+    --color: white;
+  }
+  
+  ion-button[color="light"] {
+    --background: #f6aafb;
+    --background-activated: #e688e9;
+    --color: white;
+  }
+
+  .ion-padding h2 {
+    font-weight: bold;
+    margin-bottom: 16px;
+  }
+  
+  /* Atur ulang tata letak untuk layar kecil */
+@media (max-width: 600px) {
+  .search-add {
+    flex-direction: column;
+    align-items: stretch; /* Agar elemen melebar penuh */
+    gap: 10px; /* Jarak antar elemen */
+  }
+
+  .search-add input {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .add-button {
+    font-size: 28px;
+    width: 100%;
+    padding: 12px;
+  }
+}
+
+.table-scroll-container {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-width: 100%;
+  max-height: 70vh; /* Boleh disesuaikan */
+  -webkit-overflow-scrolling: touch;
+}
+
+.product-table {
+  min-width: 800px; /* Supaya tabel tidak terpotong di layar kecil */
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  display: inline-block;
+  width: 70px;
+}
+
+.status-badge.active {
+  background-color: #d4f8e8;
+  color: #1e8449;
+  border: 1px solid #1e8449;
+}
+
+.status-badge.inactive {
+  background-color: #f8d7da;
+  color: #c0392b;
+  border: 1px solid #c0392b;
+}
+
+
+/* Container Kartu Chart */
+.chart-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: space-between;
+
+}
+
+/* Kartu Chart */
+.chart-card {
+  background: linear-gradient(135deg, #8241c4, #4c2a85);
+  color: white;
+  border-radius: 20px;
+  padding: 20px;
+  flex: 1 1 48%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.chart-card h3 {
+  margin-bottom: 12px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Chart Area */
+.chart-container {
+  width: 100%;
+  height: 250px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .chart-card {
+    flex: 1 1 100%;
+  }
+}
+
+.product-table button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin: 2px;
+  transition: background-color 0.2s ease;
+}
+
+.product-table button:hover {
+  opacity: 0.9;
+}
+
+.product-table button.edit-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.product-table button.delete-btn {
+  background-color: #dc3545;
+  color: white;
+}
+.type-business {
+  color: green;
+  font-weight: 600;
+}
+
+.type-individu {
+  color: blue;
+  font-weight: 600;
+}
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: white;
+}
+
+.status-badge.paid {
+  background-color: #4caf50; /* hijau */
+}
+
+.status-badge.billed {
+  background-color: #f44336; /* merah */
+}
+
+.status-badge.unpaid {
+  background-color: #999;
+}
+
+.delete-button {
+  background: transparent;
+  border: none;
+  color: red;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0;
+}
+
+.delete-button:hover {
+  color: darkred;
+}
+.profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 16px;
+  cursor: pointer;
+}
+
+ion-popover {
+  --background: #f6aafb; /* Pink lembut */
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 8px 0;
+}
+
+ion-popover ion-list {
+  margin: 0;
+  padding: 0;
+}
+
+ion-popover ion-item {
+  --background: transparent;
+  color: #4a007f; /* Ungu gelap */
+  font-weight: 600;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+ion-popover ion-item:hover {
+  background-color: #e7c5ff; /* Hover warna ungu muda */
+}
+
+

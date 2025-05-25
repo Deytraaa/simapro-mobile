@@ -1,0 +1,56 @@
+/* Kontainer Form */
+.form-container {
+    background-color: #8F87F1; /* ungu pastel lembut */
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Label dan Item */
+  ion-item {
+    --background: transparent;
+    background: transparent;
+    margin-bottom: 10px;
+  }
+  
+  ion-label {
+    font-weight: 600;
+    color: white;
+  }
+  
+  /* Input dan Textarea */
+  ion-input,
+  ion-textarea {
+    margin-top: 20px;
+    background: white;
+    color: black;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+  
+  /* Tombol Simpan */
+  .custom-btn-simpan {
+    color: white;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 10px 24px;
+    border: none;
+    box-shadow: none;
+    transition: background-color 0.3s ease;
+  }
+  
+  
+  
+  /* Tombol Batal */
+  .custom-btn-batal {
+    color: rgb(255, 255, 255);
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 10px 24px;
+    border: none;
+    box-shadow: none;
+    transition: background-color 0.3s ease;
+  }
+  
+  
