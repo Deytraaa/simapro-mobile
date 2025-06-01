@@ -24,11 +24,13 @@ import './TambahProduk.css';
 
 const TambahPenjualan = () => {
   const [customerId, setCustomerId] = useState('');
+  const [productId, setProductId] = useState('');
   const [amount, setAmount] = useState('');
   const [status, setStatus] = useState('');
   const [billedDate, setBilledDate] = useState('');
   const [paidDate, setPaidDate] = useState('');
   const [customers, setCustomers] = useState([]);
+  const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: '' }); // State untuk notifikasi
@@ -37,77 +39,112 @@ const TambahPenjualan = () => {
   const token = localStorage.getItem('token') || '';
 
   useEffect(() => {
-    const fetchCustomers = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch('https://sazura.xyz/api/v1/customers', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) throw new Error('Gagal mengambil data pelanggan');
-        const json = await res.json();
-        setCustomers(json.data || []);
+        const [customersRes, productsRes] = await Promise.all([
+          fetch('https://sazura.xyz/api/v1/customers', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch('https://sazura.xyz/api/v1/products', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+        ]);
+
+        const customersData = await customersRes.json();
+        const productsData = await productsRes.json();
+
+        setCustomers(customersData.data || []);
+        setProducts(productsData.data || []);
       } catch (err) {
         setNotification({ message: err.message, type: 'error' });
       } finally {
         setIsLoading(false);
       }
     };
-    fetchCustomers();
+    fetchData();
   }, [token]);
 
   const isValidDateTime = (str) => {
     return /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(str);
   };
 
+  // Update the handleSubmit function to match database columns
   const handleSubmit = async () => {
-    if (!customerId || !amount || !status || !billedDate) {
-      setNotification({ message: 'Mohon lengkapi semua inputan.', type: 'error' });
+    if (!customerId || !productId || !amount || !status || !billedDate) {
+      setNotification({
+        message: 'Mohon lengkapi semua inputan.',
+        type: 'error',
+        show: true
+      });
       return;
     }
 
     if (!isValidDateTime(billedDate)) {
-      setNotification({ message: 'Format Tanggal Tagihan salah. Gunakan format: YYYY-MM-DD HH:mm:ss', type: 'error' });
+      setNotification({
+        message: 'Format Tanggal Tagihan salah. Gunakan format: YYYY-MM-DD HH:mm:ss',
+        type: 'error',
+        show: true
+      });
       return;
     }
 
     if (status === 'P' && (!paidDate || !isValidDateTime(paidDate))) {
-      setNotification({ message: 'Tanggal Pembayaran wajib diisi dan format harus benar jika status Lunas.', type: 'error' });
+      setNotification({
+        message: 'Tanggal Pembayaran wajib diisi dan format harus benar jika status Lunas.',
+        type: 'error',
+        show: true
+      });
       return;
     }
 
-    const newInvoice = [
-      {
-        customerId,
-        amount: Number(amount),
-        status,
-        billedDate,
-        paidDate: status === 'P' ? paidDate : null,
-      },
-    ];
+    const newInvoice = [{
+      customerId: Number(customerId),
+      productId: productId, // Keep as string, already converted in the select
+      amount: Number(amount),
+      status,
+      billedDate,
+      paidDate: status === 'P' ? paidDate : null,
+    }];
 
     setSubmitLoading(true);
-    setNotification({ message: '', type: '' });
 
     try {
+      console.log('Sending data:', newInvoice); // Debug log
+
       const res = await fetch('https://sazura.xyz/api/v1/invoices/bulk', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
         },
-        body: JSON.stringify(newInvoice),
+        body: JSON.stringify(newInvoice)
       });
 
+      const responseData = await res.json();
+      console.log('Response:', responseData);
+
       if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error('Gagal mengirim data: ' + errorText);
+        throw new Error(responseData.message || 'Gagal mengirim data');
       }
 
-      setNotification({ message: 'Invoice berhasil ditambahkan!', type: 'success' });
-      history.push('/app/Tab5');
+      setNotification({
+        message: 'Invoice berhasil ditambahkan!',
+        type: 'success',
+        show: true
+      });
+
+      setTimeout(() => {
+        history.push('/app/tab5');
+      }, 1500);
+
     } catch (err) {
-      setNotification({ message: 'Terjadi kesalahan: ' + err.message, type: 'error' });
+      console.error('Error:', err);
+      setNotification({
+        message: err.message || 'Terjadi kesalahan saat mengirim data',
+        type: 'error',
+        show: true
+      });
     } finally {
       setSubmitLoading(false);
     }
@@ -135,13 +172,13 @@ const TambahPenjualan = () => {
       <IonContent className="ion-padding">
         <h2>TAMBAH PENJUALAN</h2>
 
-        {notification.message && (
-          <NotificationBar
-            message={notification.message}
-            type={notification.type}
-            onClose={() => setNotification({ message: '', type: '' })}
-          />
-        )}
+        {/* Replace the existing NotificationBar */}
+        <NotificationBar
+          show={notification.show}
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification({ message: '', type: '', show: false })}
+        />
 
         <div className="form-container">
           <IonItem>
@@ -154,6 +191,21 @@ const TambahPenjualan = () => {
               {customers.map((cust) => (
                 <IonSelectOption key={cust.id} value={cust.id}>
                   {cust.id.toString().padStart(3, '0')} - {cust.name}
+                </IonSelectOption>
+              ))}
+            </IonSelect>
+          </IonItem>
+
+          <IonItem>
+            <IonLabel position="stacked">Pilih Produk</IonLabel>
+            <IonSelect
+              value={productId}
+              placeholder="-- Pilih Produk --"
+              onIonChange={(e) => setProductId(e.detail.value)}
+            >
+              {products.map((prod) => (
+                <IonSelectOption key={prod.id} value={String(prod.id)}> {/* Convert ID to string */}
+                  {prod.name}
                 </IonSelectOption>
               ))}
             </IonSelect>

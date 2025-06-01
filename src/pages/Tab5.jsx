@@ -21,6 +21,7 @@ import { FaCheck } from 'react-icons/fa';
 const Tab5 = () => {
   const [data, setData] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [products, setProducts] = useState([]); // Add products state
   const [search, setSearch] = useState("");
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -39,6 +40,7 @@ const Tab5 = () => {
   useEffect(() => {
     fetchData();
     fetchCustomers();
+    fetchProducts(); // Add this
   }, []);
 
   const fetchData = async () => {
@@ -79,9 +81,35 @@ const Tab5 = () => {
     }
   };
 
+  // Add fetchProducts function
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch('https://sazura.xyz/api/v1/products', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      const response = await res.json();
+      if (Array.isArray(response.data)) {
+        setProducts(response.data);
+      }
+    } catch (error) {
+      setToastMessage("Gagal mengambil data produk");
+      setToastColor("danger");
+      setShowToast(true);
+    }
+  };
+
   const getCustomerName = (customerId) => {
     const customer = customers.find(c => Number(c.id) === Number(customerId));
     return customer ? customer.name : 'Unknown';
+  };
+
+  // Update the getProductName function to match getCustomerName's logic
+  const getProductName = (productId) => {
+    const product = products.find(p => Number(p.id) === Number(productId));
+    return product ? product.name : 'Unknown';
   };
 
   const toggleStatusPaid = async (item) => {
@@ -91,8 +119,11 @@ const Tab5 = () => {
     const formattedDate = now.toISOString().slice(0, 19).replace('T', ' ');
 
     const payload = {
-      ...item,
+      customerId: item.customerId,
+      product: item.product,
+      amount: item.amount,        // Keep this exactly as it was!
       status: 'P',
+      billedDate: item.billedDate,
       paidDate: formattedDate,
     };
 
@@ -218,8 +249,8 @@ const Tab5 = () => {
               <thead>
                 <tr>
                   <th>No.</th>
-                  <th>ID Pelanggan</th>
                   <th>Nama Pelanggan</th>
+                  <th>Produk</th>
                   <th>Jumlah</th>
                   <th>Status</th>
                   <th>Tgl Tagihan</th>
@@ -231,8 +262,8 @@ const Tab5 = () => {
                 {filteredData.map((item, index) => (
                   <tr key={item.id}>
                     <td>{index + 1}</td>
-                    <td>{item.customerId}</td>
                     <td>{getCustomerName(item.customerId)}</td>
+                    <td>{getProductName(item.productId)}</td>
                     <td>{item.amount}</td>
                     <td>
                       {item.status.toLowerCase() === 'b' ? (
