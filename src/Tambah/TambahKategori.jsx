@@ -43,19 +43,21 @@ const TambahKategori = () => {
       return;
     }
 
-    // Change this part to properly handle empty description
-    const form = {
-      name: nama.trim(),
-      description: deskripsi.trim() || deskripsi || '-' // Try to use the actual description first
-    };
-
     setIsLoading(true);
     setError('');
     setNotification({ show: false, message: '', type: '' });
 
-    try {
-      console.log('Sending category data:', form); // Debug log
+    // Modified form data creation
+    const formData = {
+      name: nama.trim(),
+      description: deskripsi ? deskripsi.trim() : deskripsi // Don't default to '-', send actual value
+    };
 
+    // Debug logs
+    console.log('Form Values:', { nama, deskripsi }); // Log raw form values
+    console.log('Sending data:', formData); // Log processed data
+
+    try {
       const response = await fetch('https://sazura.xyz/api/v1/categories', {
         method: 'POST',
         headers: {
@@ -63,19 +65,15 @@ const TambahKategori = () => {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json',
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify(formData)
       });
 
-      const responseText = await response.text();
-      console.log('Response:', responseText);
+      // Log the raw response
+      const rawResponse = await response.text();
+      console.log('Raw response:', rawResponse);
 
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (e) {
-        console.error('Failed to parse response:', e);
-        throw new Error('Invalid server response');
-      }
+      // Parse the response only if it's valid JSON
+      const responseData = rawResponse ? JSON.parse(rawResponse) : {};
 
       if (response.ok) {
         setNotification({
@@ -87,14 +85,13 @@ const TambahKategori = () => {
           history.push('/app/tab3');
         }, 1500);
       } else {
-        throw new Error(data.message || 'Gagal menambahkan kategori');
+        throw new Error(responseData.message || 'Gagal menambahkan kategori');
       }
     } catch (error) {
       console.error('Error:', error);
-      setError(`Terjadi kesalahan: ${error.message}`);
       setNotification({
         show: true,
-        message: `Terjadi kesalahan: ${error.message}`,
+        message: error.message,
         type: 'error',
       });
     } finally {
@@ -146,10 +143,7 @@ const TambahKategori = () => {
             <IonTextarea
               placeholder="Masukkan deskripsi kategori..."
               value={deskripsi}
-              onIonChange={(e) => {
-                console.log('Description changed:', e.detail.value); // Debug log
-                setDeskripsi(e.detail.value || '');
-              }}
+              onIonChange={(e) => setDeskripsi(e.detail.value)}
               rows={3}
             />
           </IonItem>
@@ -170,14 +164,14 @@ const TambahKategori = () => {
             </IonButton>
           </div>
         </div>
-
-        <NotificationBar
-          show={notification.show}
-          message={notification.message}
-          type={notification.type}
-          onClose={() => setNotification({ show: false, message: '', type: '' })}
-        />
       </IonContent>
+
+      <NotificationBar
+        show={notification.show}
+        message={notification.message}
+        type={notification.type}
+        onClose={() => setNotification({ show: false, message: '', type: '' })}
+      />
 
       <IonLoading isOpen={isLoading} message={'Menyimpan data...'} />
     </IonPage>

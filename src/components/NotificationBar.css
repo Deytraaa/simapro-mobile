@@ -31,3 +31,56 @@
     font-weight: bold;
   }
   
+  .notification-success {
+    --ion-color-primary: #4caf50;
+    --ion-background-color: #4caf50;
+    --ion-text-color: white;
+    --min-height: 48px;
+    position: fixed;
+    top: 80px !important;
+    width: 90%;
+    max-width: 400px;
+    margin: 0 auto;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 8px;
+    z-index: 9999;
+  }
+  
+  .notification-error {
+    --ion-color-primary: #f44336;
+    --ion-background-color: #f44336;
+    --ion-text-color: white;
+    --min-height: 48px;
+    position: fixed;
+    top: 80px !important;
+    width: 90%;
+    max-width: 400px;
+    margin: 0 auto;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 8px;
+    z-index: 9999;
+  }
+  
+  /* Add a container for proper positioning */
+  .notification-container {
+    position: relative;
+    pointer-events: none;
+  }
+
+  .custom-toast {
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 16px;
+  }
+  
+  .custom-toast.success {
+    --background: #4caf50;
+    --color: white;
+  }
+  
+  .custom-toast.error {
+    --background: #f44336;
+    --color: white;
+  }

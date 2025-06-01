@@ -53,3 +53,28 @@ ion-textarea {
   transition: background-color 0.3s ease;
 }
 
+/* Kontainer Notifikasi */
+.notification-container {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: 80%;
+  max-width: 500px;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+/* Notifikasi Sukses */
+.notification-success {
+  background-color: #4caf50;
+  color: white;
+}
+
+/* Notifikasi Error */
+.notification-error {
+  background-color: #f44336;
+  color: white;
+}
+

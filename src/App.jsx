@@ -29,6 +29,7 @@ import EditProduk from './edit/EditProduk';
 import EditPelanggan from './edit/EditPelanggan';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import EditKategori from './edit/EditKategori';
 
 import './App.css';
 import './theme/variables.css';
@@ -77,6 +78,9 @@ const App = () => {
           <Route exact path="/app/tambah-penjualan" component={TambahPenjualan} />
           <Route exact path="/app/edit-produk/:id" component={EditProduk} />
           <Route exact path="/app/edit-pelanggan/:id" component={EditPelanggan} />
+          <Route path="/app/edit-kategori/:id" exact={true}>
+            <EditKategori />
+          </Route>
           <Route exact path="/app" render={() => <Redirect to="/app/tab1" />} />
         </IonRouterOutlet>
 

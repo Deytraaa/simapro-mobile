@@ -1,36 +1,22 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { IonToast } from '@ionic/react';
 import './NotificationBar.css';
 
-const NotificationBar = ({ show, message, type, onClose, duration = 3000 }) => {
-  useEffect(() => {
-    let audio;
-
-    if (show) {
-      if (type === 'success') {
-        audio = new Audio('/success.mp3'); // Akses file di folder public
-        audio.play();
-      }
-
-      const timer = setTimeout(() => {
-        onClose();
-      }, duration);
-
-      return () => {
-        clearTimeout(timer);
-        if (audio) {
-          audio.pause();
-          audio.currentTime = 0;
-        }
-      };
-    }
-  }, [show, type, duration, onClose]);
-
-  if (!show) return null;
-
+const NotificationBar = ({ show, message, type, onClose }) => {
   return (
-    <div className={`notification-bar ${type}`}>
-      <span>{message}</span>
-    </div>
+    <IonToast
+      isOpen={show}
+      onDidDismiss={onClose}
+      message={message}
+      duration={2000}
+      position="top"
+      cssClass={`custom-toast ${type}`}
+      style={{
+        '--min-height': '50px',
+        '--max-width': '90%',
+        '--toast-max-width': '400px'
+      }}
+    />
   );
 };
 

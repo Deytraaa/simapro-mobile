@@ -9,7 +9,9 @@ import {
   IonPopover,
   IonList,
   IonItem,
-  IonLabel
+  IonLabel,
+  IonAlert,
+  IonToast
 } from '@ionic/react';
 import './Tab2.css';
 import simaproLogo from '../assets/simapro2.png';
@@ -27,6 +29,10 @@ const Tab3 = () => {
   const history = useHistory();
   const [showPopover, setShowPopover] = useState(false);
   const [popoverEvent, setPopoverEvent] = useState(null);
+  const [showAlert, setShowAlert] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
   useIonViewWillEnter(() => {
     fetchCategories(1); // Fetch first page
@@ -66,6 +72,41 @@ const Tab3 = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     history.push('/login');
+  };
+
+  const handleDeleteClick = (id) => {
+    setSelectedCategoryId(id);
+    setShowAlert(true);
+  };
+
+  const deleteCategory = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      history.push('/login');
+      return;
+    }
+    try {
+      const response = await fetch(`https://sazura.xyz/api/v1/categories/${selectedCategoryId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        setToastMessage('Kategori berhasil dihapus');
+        setShowToast(true);
+        fetchCategories(currentPage); // Refresh the list
+      } else {
+        setToastMessage('Gagal menghapus kategori');
+        setShowToast(true);
+      }
+    } catch (error) {
+      console.error('Failed to delete category:', error);
+      setToastMessage('Terjadi kesalahan saat menghapus');
+      setShowToast(true);
+    }
   };
 
   const filteredCategories = categories
@@ -153,11 +194,12 @@ const Tab3 = () => {
                   <th>No</th>
                   <th>Nama</th>
                   <th>Deskripsi</th>
+                  <th>Edit</th>
+                  <th>Hapus</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredCategories.map((category, index) => {
-                  // Generate a fallback key if category_id is missing
                   const key = category.category_id || `category-${index}`;
                   
                   return (
@@ -165,6 +207,22 @@ const Tab3 = () => {
                       <td>{(currentPage - 1) * 15 + index + 1}</td>
                       <td>{category.name || '-'}</td>
                       <td>{category.description || '-'}</td>
+                      <td>
+                        <button 
+                          className="edit-btn"
+                          onClick={() => history.push(`/app/edit-kategori/${category.id}`)}
+                        >
+                          Edit
+                        </button>
+                      </td>
+                      <td>
+                        <button 
+                          className="delete-btn"
+                          onClick={() => handleDeleteClick(category.id)}
+                        >
+                          Hapus
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
@@ -189,6 +247,32 @@ const Tab3 = () => {
               Next
             </button>
           </div>
+
+          <IonAlert
+            isOpen={showAlert}
+            onDidDismiss={() => setShowAlert(false)}
+            header={'Konfirmasi Hapus'}
+            message={'Apakah Anda yakin ingin menghapus kategori ini?'}
+            buttons={[
+              {
+                text: 'Batal',
+                role: 'cancel',
+                handler: () => setShowAlert(false),
+              },
+              {
+                text: 'Hapus',
+                handler: () => deleteCategory(),
+              },
+            ]}
+          />
+
+          <IonToast
+            isOpen={showToast}
+            onDidDismiss={() => setShowToast(false)}
+            message={toastMessage}
+            duration={2000}
+            color="primary"
+          />
         </div>
       </IonContent>
     </IonPage>
