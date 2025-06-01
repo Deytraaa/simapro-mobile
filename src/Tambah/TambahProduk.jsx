@@ -57,17 +57,71 @@ const TambahProduk = () => {
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data.data)) {
-          setCategories(data.data);
+          // Filter out invalid categories
+          const validCategories = data.data.filter(cat => cat && cat.id);
+          setCategories(validCategories);
         } else {
           console.error("Kategori tidak valid:", data);
+          setNotification({
+            show: true,
+            message: 'Gagal memuat data kategori',
+            type: 'error',
+          });
         }
       })
       .catch(err => {
         console.error("Gagal mengambil kategori:", err);
+        setNotification({
+          show: true,
+          message: 'Gagal mengambil data kategori',
+          type: 'error',
+        });
       });
   }, [history]);
 
   const handleSimpan = async () => {
+    // Enhanced validation
+    if (!categoryId) {
+      setNotification({
+        show: true,
+        message: 'Pilih kategori terlebih dahulu!',
+        type: 'error',
+      });
+      return;
+    }
+
+    if (!nama || !stok || !harga) {
+      setNotification({
+        show: true,
+        message: 'Semua field harus diisi!',
+        type: 'error',
+      });
+      return;
+    }
+
+    // Validate numeric values
+    const numericStok = parseInt(stok);
+    const numericHarga = parseFloat(harga);
+    const numericCategoryId = parseInt(categoryId);
+
+    if (isNaN(numericStok) || numericStok <= 0) {
+      setNotification({
+        show: true,
+        message: 'Stok harus berupa angka positif!',
+        type: 'error',
+      });
+      return;
+    }
+
+    if (isNaN(numericHarga) || numericHarga <= 0) {
+      setNotification({
+        show: true,
+        message: 'Harga harus berupa angka positif!',
+        type: 'error',
+      });
+      return;
+    }
+
     const token = localStorage.getItem('token');
 
     if (!token) {
@@ -81,24 +135,36 @@ const TambahProduk = () => {
     }
 
     const form = {
-      categoryId,
-      name: nama,
+      categoryId: parseInt(categoryId), // this is correct - backend expects 'categoryId'
+      name: nama.trim(),
       amount: parseInt(stok),
-      price: parseFloat(harga),
-      status,
+      price: parseInt(harga), // change to parseInt since DB expects integer
+      status: status.toLowerCase() // ensure lowercase to match backend validation
     };
 
     try {
+      console.log('Sending data:', form);
+
       const response = await fetch('https://sazura.xyz/api/v1/products/bulk', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
         },
         body: JSON.stringify([form]),
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      console.log('Response:', responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        console.error('Failed to parse response:', e);
+        throw new Error('Invalid server response');
+      }
 
       if (response.ok) {
         setNotification({
@@ -106,19 +172,15 @@ const TambahProduk = () => {
           message: 'Produk berhasil ditambahkan!',
           type: 'success',
         });
-        setTimeout(() => history.push('/app/tab2'), 1500); // Redirect setelah 1.5 detik
+        setTimeout(() => history.push('/app/tab2'), 1500);
       } else {
-        setNotification({
-          show: true,
-          message: `Gagal menambahkan produk: ${data.message || 'Terjadi kesalahan'}`,
-          type: 'error',
-        });
+        throw new Error(data.message || 'Terjadi kesalahan saat menambah produk');
       }
     } catch (error) {
       console.error('Error:', error);
       setNotification({
         show: true,
-        message: 'Terjadi kesalahan saat menghubungi server.',
+        message: error.message || 'Terjadi kesalahan saat menghubungi server',
         type: 'error',
       });
     }
@@ -184,13 +246,24 @@ const TambahProduk = () => {
               <IonSelect
                 value={categoryId}
                 placeholder="Pilih kategori"
-                onIonChange={(e) => setCategoryId(e.detail.value)}
+                onIonChange={(e) => {
+                  console.log('Selected category:', e.detail.value); // Debug log
+                  setCategoryId(e.detail.value);
+                }}
               >
-                {categories.map((cat) => (
-                  <IonSelectOption key={cat.category_id} value={cat.category_id}>
-                    {cat.category_id} - {cat.name}
-                  </IonSelectOption>
-                ))}
+                {categories.map((cat) => {
+                  // Skip invalid categories
+                  if (!cat || !cat.id) return null;
+                  
+                  return (
+                    <IonSelectOption 
+                      key={cat.id} 
+                      value={cat.id.toString()}
+                    >
+                      {cat.name || 'Unnamed Category'}
+                    </IonSelectOption>
+                  );
+                })}
               </IonSelect>
             </IonItem>
 
@@ -201,8 +274,8 @@ const TambahProduk = () => {
                 placeholder="Pilih status"
                 onIonChange={(e) => setStatus(e.detail.value)}
               >
-                <IonSelectOption value="a">a - Aktif</IonSelectOption>
-                <IonSelectOption value="n">n - Nonaktif</IonSelectOption>
+                <IonSelectOption value="a">Aktif</IonSelectOption>
+                <IonSelectOption value="n">Nonaktif</IonSelectOption>
               </IonSelect>
             </IonItem>
 

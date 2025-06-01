@@ -29,8 +29,8 @@ const Tab3 = () => {
   const [popoverEvent, setPopoverEvent] = useState(null);
 
   useIonViewWillEnter(() => {
-    // Fetch first page when entering the view
-    setCurrentPage(1);
+    fetchCategories(1); // Fetch first page
+    setCurrentPage(1); // Reset to first page
   });
 
   useEffect(() => {
@@ -44,15 +44,23 @@ const Tab3 = () => {
       history.push('/login');
       return;
     }
-    const res = await fetch(`https://sazura.xyz/api/v1/categories?page=${page}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
+    try {
+      const res = await fetch(`https://sazura.xyz/api/v1/categories?page=${page}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        }
+      });
+      const response = await res.json();
+      if (Array.isArray(response.data)) {
+        // Filter out invalid categories
+        const validCategories = response.data.filter(cat => cat && (cat.category_id || cat.id));
+        setCategories(validCategories);
+        setLastPage(response.meta?.last_page || 1);
       }
-    });
-    const response = await res.json();
-    setCategories(Array.isArray(response.data) ? response.data : []);
-    setLastPage(response.meta?.last_page || 1);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
   };
 
   const handleLogout = () => {
@@ -148,13 +156,18 @@ const Tab3 = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredCategories.map((category, index) => (
-                  <tr key={category.category_id}>
-                    <td>{(currentPage - 1) * 15 + index + 1}</td> {/* 15 is default per page */}
-                    <td>{category.name || '-'}</td>
-                    <td>{category.description || '-'}</td>
-                  </tr>
-                ))}
+                {filteredCategories.map((category, index) => {
+                  // Generate a fallback key if category_id is missing
+                  const key = category.category_id || `category-${index}`;
+                  
+                  return (
+                    <tr key={key}>
+                      <td>{(currentPage - 1) * 15 + index + 1}</td>
+                      <td>{category.name || '-'}</td>
+                      <td>{category.description || '-'}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

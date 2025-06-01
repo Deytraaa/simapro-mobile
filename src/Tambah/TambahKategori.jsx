@@ -43,9 +43,10 @@ const TambahKategori = () => {
       return;
     }
 
+    // Change this part to properly handle empty description
     const form = {
       name: nama.trim(),
-      description: deskripsi.trim(),
+      description: deskripsi.trim() || deskripsi || '-' // Try to use the actual description first
     };
 
     setIsLoading(true);
@@ -53,40 +54,43 @@ const TambahKategori = () => {
     setNotification({ show: false, message: '', type: '' });
 
     try {
+      console.log('Sending category data:', form); // Debug log
+
       const response = await fetch('https://sazura.xyz/api/v1/categories', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
         },
         body: JSON.stringify(form),
       });
 
-      const contentType = response.headers.get('content-type');
+      const responseText = await response.text();
+      console.log('Response:', responseText);
 
-      if (!response.ok) {
-        if (contentType && contentType.includes('application/json')) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Gagal menambahkan kategori');
-        } else {
-          const errorText = await response.text();
-          throw new Error('Respon dari server tidak valid (bukan JSON)');
-        }
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        console.error('Failed to parse response:', e);
+        throw new Error('Invalid server response');
       }
 
-      // Jika berhasil
-      setNotification({
-        show: true,
-        message: 'Kategori berhasil ditambahkan!',
-        type: 'success',
-      });
-
-      // Bisa juga langsung redirect dengan delay supaya notifikasi sempat terbaca
-      setTimeout(() => {
-        history.push('/app/tab3');
-      }, 1500);
-
+      if (response.ok) {
+        setNotification({
+          show: true,
+          message: 'Kategori berhasil ditambahkan!',
+          type: 'success',
+        });
+        setTimeout(() => {
+          history.push('/app/tab3');
+        }, 1500);
+      } else {
+        throw new Error(data.message || 'Gagal menambahkan kategori');
+      }
     } catch (error) {
+      console.error('Error:', error);
       setError(`Terjadi kesalahan: ${error.message}`);
       setNotification({
         show: true,
@@ -142,7 +146,10 @@ const TambahKategori = () => {
             <IonTextarea
               placeholder="Masukkan deskripsi kategori..."
               value={deskripsi}
-              onIonChange={(e) => setDeskripsi(e.detail.value)}
+              onIonChange={(e) => {
+                console.log('Description changed:', e.detail.value); // Debug log
+                setDeskripsi(e.detail.value || '');
+              }}
               rows={3}
             />
           </IonItem>

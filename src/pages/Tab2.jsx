@@ -12,6 +12,7 @@ import {
   IonList,
   IonItem,
   IonLabel,
+  useIonViewWillEnter
 } from '@ionic/react';
 import './Tab2.css';
 import simaproLogo from '../assets/simapro2.png';
@@ -30,31 +31,38 @@ const Tab2 = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [showPopover, setShowPopover] = useState(false);
   const [popoverEvent, setPopoverEvent] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [perPage] = useState(15); // Default from Laravel
 
   // Dapatkan token dari localStorage
   const token = localStorage.getItem('token');
 
-  useEffect(() => {
+  useIonViewWillEnter(() => {
     fetchData();
     fetchCategories();
-  }, []);
+  });
 
-  const fetchData = () => {
-    fetch('https://sazura.xyz/api/v1/products', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-      },
-    })
-      .then(res => res.json())
-      .then(response => {
-        if (Array.isArray(response.data)) {
-          setData(response.data);
-        } else {
-          console.error('Data produk tidak dalam bentuk array:', response);
-        }
-      })
-      .catch(error => console.error('Gagal fetch produk:', error));
+  // Update fetchData to handle pagination
+  const fetchData = async () => {
+    try {
+      const response = await fetch(`https://sazura.xyz/api/v1/products?page=${currentPage}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      });
+      const result = await response.json();
+      
+      if (Array.isArray(result.data)) {
+        setData(result.data);
+        setLastPage(result.meta.last_page || 1);
+      } else {
+        console.error('Data produk tidak valid:', result);
+      }
+    } catch (error) {
+      console.error('Gagal fetch produk:', error);
+    }
   };
 
   const fetchCategories = () => {
@@ -118,6 +126,11 @@ const Tab2 = () => {
   const filteredData = data
     .filter(item => item.name.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => a.name.localeCompare(b.name));
+
+  // Keep the pagination useEffect
+  useEffect(() => {
+    fetchData();
+  }, [currentPage]); // Re-fetch when page changes
 
   return (
     <IonPage>
@@ -205,7 +218,7 @@ const Tab2 = () => {
               <tbody>
                 {filteredData.map((item, index) => (
                   <tr key={item.id}>
-                    <td>{index + 1}</td>
+                    <td>{((currentPage - 1) * perPage) + index + 1}</td>
                     <td>{item.name}</td>
                     <td>{item.amount}</td>
                     <td>{item.price ? `Rp ${parseInt(item.price).toLocaleString('id-ID')}` : 'Rp 0'}</td>
@@ -214,7 +227,7 @@ const Tab2 = () => {
                         {item.status === 'a' ? 'Aktif' : 'Nonaktif'}
                       </span>
                     </td>
-                    <td>{getCategoryName(item.categoryId)}</td>
+                    <td>{getCategoryName(item.category_id)}</td>
                     <td>
                       <button className="edit-btn" onClick={() => history.push(`/app/edit-produk/${item.id}`)}>
                         Edit
@@ -230,6 +243,35 @@ const Tab2 = () => {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Add Pagination Controls */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          gap: '10px', 
+          margin: '20px 0',
+          alignItems: 'center' 
+        }}>
+          <button 
+            className="pagination-btn"
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+          
+          <span>
+            Page {currentPage} of {lastPage}
+          </span>
+
+          <button 
+            className="pagination-btn"
+            onClick={() => setCurrentPage(p => Math.min(lastPage, p + 1))}
+            disabled={currentPage === lastPage}
+          >
+            Next
+          </button>
         </div>
 
         <IonAlert
