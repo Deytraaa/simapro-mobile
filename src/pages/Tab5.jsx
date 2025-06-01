@@ -9,7 +9,8 @@ import {
   IonPopover,
   IonList,
   IonItem,
-  IonLabel
+  IonLabel,
+  useIonViewWillEnter // Add this import
 } from '@ionic/react';
 import './Tab1.css';
 import simaproLogo from '../assets/simapro2.png';
@@ -37,11 +38,12 @@ const Tab5 = () => {
     history.push("/login");
   };
 
-  useEffect(() => {
+  // Add this hook to refresh data when entering the page
+  useIonViewWillEnter(() => {
     fetchData();
     fetchCustomers();
-    fetchProducts(); // Add this
-  }, []);
+    fetchProducts();
+  });
 
   const fetchData = async () => {
     try {
