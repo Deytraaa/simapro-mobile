@@ -16,46 +16,44 @@ import simaproLogo from '../assets/simapro2.png';
 import poto from '../assets/pp.png';
 import { useHistory } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { useIonViewWillEnter } from '@ionic/react';
 
 const Tab3 = () => {
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [perPage] = useState(5); // Change this for different page size
   const history = useHistory();
   const [showPopover, setShowPopover] = useState(false);
   const [popoverEvent, setPopoverEvent] = useState(null);
 
+  useIonViewWillEnter(() => {
+    // Fetch first page when entering the view
+    setCurrentPage(1);
+  });
+
   useEffect(() => {
+    fetchCategories(currentPage);
+    // eslint-disable-next-line
+  }, [currentPage]);
+
+  const fetchCategories = async (page) => {
     const token = localStorage.getItem('token');
     if (!token) {
-      history.push('/login'); // Jika token tidak ada, redirect ke login
+      history.push('/login');
       return;
     }
-
-    fetch('https://sazura.xyz/api/v1/categories', {
+    const res = await fetch(`https://sazura.xyz/api/v1/categories?page=${page}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/json',
       }
-    })
-      .then(res => {
-        if (res.status === 401) {
-          // Token expired atau tidak valid
-          localStorage.removeItem('token');
-          history.push('/login');
-          return null;
-        }
-        return res.json();
-      })
-      .then(response => {
-        if (!response) return;
-        if (Array.isArray(response.data)) {
-          setCategories(response.data);
-        } else {
-          console.error('Data kategori tidak valid:', response);
-        }
-      })
-      .catch(error => console.error('Gagal fetch kategori:', error));
-  }, [history]);
+    });
+    const response = await res.json();
+    setCategories(Array.isArray(response.data) ? response.data : []);
+    setLastPage(response.meta?.last_page || 1);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -144,21 +142,39 @@ const Tab3 = () => {
             <table className="product-table">
               <thead>
                 <tr>
-                  <th>ID Kategori</th>
+                  <th>No</th>
                   <th>Nama</th>
                   <th>Deskripsi</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredCategories.map((category) => (
+                {filteredCategories.map((category, index) => (
                   <tr key={category.category_id}>
-                    <td>{category.category_id}</td>
+                    <td>{(currentPage - 1) * 15 + index + 1}</td> {/* 15 is default per page */}
                     <td>{category.name || '-'}</td>
                     <td>{category.description || '-'}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+          {/* Pagination Controls */}
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0' }}>
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              Prev
+            </button>
+            <span style={{ margin: '0 12px' }}>
+              Page {currentPage} of {lastPage}
+            </span>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(lastPage, p + 1))}
+              disabled={currentPage === lastPage}
+            >
+              Next
+            </button>
           </div>
         </div>
       </IonContent>
