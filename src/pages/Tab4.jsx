@@ -18,6 +18,7 @@ import simaproLogo from '../assets/simapro2.png';
 import poto from '../assets/pp.png';
 import { useHistory } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { useIonViewWillEnter } from '@ionic/react'; // Add this import
 
 const Tab4 = () => {
   const [customers, setCustomers] = useState([]);
@@ -30,48 +31,59 @@ const Tab4 = () => {
   const [showPopover, setShowPopover] = useState(false);
   const [popoverEvent, setPopoverEvent] = useState(null);
 
+  // Add pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [perPage] = useState(15); // Items per page
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     history.push("/login");
   };
 
-  useEffect(() => {
-    fetchCustomers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Replace useEffect with useIonViewWillEnter
+  useIonViewWillEnter(() => {
+    fetchCustomers(currentPage);
+  });
 
-  const fetchCustomers = () => {
+  // Update fetchCustomers to handle pagination
+  const fetchCustomers = async (page) => {
     const token = localStorage.getItem('token');
     if (!token) {
       history.push('/login');
       return;
     }
 
-    fetch('https://sazura.xyz/api/v1/customers', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json'
+    try {
+      const response = await fetch(`https://sazura.xyz/api/v1/customers?page=${page}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        history.push('/login');
+        return;
       }
-    })
-      .then(res => {
-        if (res.status === 401) {
-          // Token invalid / expired
-          localStorage.removeItem('token');
-          history.push('/login');
-          return null;
-        }
-        return res.json();
-      })
-      .then(response => {
-        if (!response) return;
-        if (Array.isArray(response.data)) {
-          setCustomers(response.data);
-        } else {
-          console.error("Data pelanggan tidak valid:", response);
-        }
-      })
-      .catch(error => console.error("Gagal fetch pelanggan:", error));
+
+      const data = await response.json();
+      if (Array.isArray(data.data)) {
+        setCustomers(data.data);
+        setLastPage(data.meta.last_page || 1);
+      } else {
+        console.error("Data pelanggan tidak valid:", data);
+      }
+    } catch (error) {
+      console.error("Gagal fetch pelanggan:", error);
+    }
   };
+
+  // Add effect for pagination
+  useEffect(() => {
+    fetchCustomers(currentPage);
+  }, [currentPage]);
 
   const handleDeleteClick = (id) => {
     setSelectedCustomerId(id);
@@ -210,7 +222,7 @@ const Tab4 = () => {
               <tbody>
                 {filteredCustomers.map((customer, index) => (
                   <tr key={customer.id}>
-                    <td>{index + 1}</td>
+                    <td>{((currentPage - 1) * perPage) + index + 1}</td>
                     <td>{customer.name || '-'}</td>
                     <td
                       className={
@@ -239,6 +251,34 @@ const Tab4 = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            gap: '10px', 
+            margin: '20px 0',
+            alignItems: 'center' 
+          }}>
+            <button 
+              className="pagination-btn"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+            
+            <span>
+              Page {currentPage} of {lastPage}
+            </span>
+
+            <button 
+              className="pagination-btn"
+              onClick={() => setCurrentPage(p => Math.min(lastPage, p + 1))}
+              disabled={currentPage === lastPage}
+            >
+              Next
+            </button>
           </div>
         </div>
 

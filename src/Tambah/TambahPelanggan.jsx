@@ -39,19 +39,26 @@ const TambahPelanggan = () => {
   const history = useHistory();
 
   const handleSimpan = async () => {
-    if (!name.trim() || !email.trim()) {
+    // Reset states
+    setError('');
+    setNotification({ show: false, message: '', type: '' });
+
+    // Validate required fields
+    if (!name.trim() || !email.trim() || !type) {
       setNotification({
         show: true,
-        message: 'Nama dan email tidak boleh kosong.',
+        message: 'Nama, email, dan tipe pelanggan harus diisi.',
         type: 'error',
       });
       return;
     }
 
-    if (!['B', 'I'].includes(type)) {
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
       setNotification({
         show: true,
-        message: 'Tipe pelanggan harus dipilih (B atau I).',
+        message: 'Format email tidak valid.',
         type: 'error',
       });
       return;
@@ -61,52 +68,54 @@ const TambahPelanggan = () => {
       name: name.trim(),
       type,
       email: email.trim(),
-      address: address.trim(),
-      city: city.trim(),
-      postalCode: postalCode.trim(),
+      address: address.trim() || null,
+      city: city.trim() || null,
+      postalCode: postalCode.trim() || null,
     };
 
     setIsLoading(true);
-    setError('');
-    setNotification({ show: false, message: '', type: '' });
 
     try {
       const response = await fetch('https://sazura.xyz/api/v1/customers', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
         },
         body: JSON.stringify(form),
       });
 
-      const contentType = response.headers.get('content-type');
-
+      const data = await response.json();
+      
       if (!response.ok) {
-        if (contentType && contentType.includes('application/json')) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Gagal menambahkan pelanggan');
-        } else {
-          const errorText = await response.text();
-          throw new Error('Respon tidak valid: ' + errorText);
+        // Handle validation errors from backend
+        if (response.status === 422) {
+          const errorMessage = data.errors ? 
+            Object.values(data.errors).flat().join('\n') : 
+            data.message;
+          throw new Error(errorMessage);
         }
+        throw new Error(data.message || 'Gagal menambahkan pelanggan');
       }
 
+      // Only show success if actually successful
       setNotification({
         show: true,
         message: 'Pelanggan berhasil ditambahkan!',
         type: 'success',
       });
 
-      // Redirect setelah delay agar notifikasi sempat muncul
+      // Redirect after successful addition
       setTimeout(() => {
         history.push('/app/tab4');
       }, 1500);
-      
+        
     } catch (error) {
+      console.error('Error:', error);
       setNotification({
         show: true,
-        message: `Terjadi kesalahan: ${error.message}`,
+        message: error.message,
         type: 'error',
       });
     } finally {

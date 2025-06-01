@@ -230,23 +230,27 @@ const Tab3 = () => {
             </table>
           </div>
           {/* Pagination Controls */}
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '16px 0' }}>
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
-              Prev
-            </button>
-            <span style={{ margin: '0 12px' }}>
-              Page {currentPage} of {lastPage}
-            </span>
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(lastPage, p + 1))}
-              disabled={currentPage === lastPage}
-            >
-              Next
-            </button>
-          </div>
+          <div className="pagination-container">
+  <button 
+    className="pagination-btn"
+    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+    disabled={currentPage === 1}
+  >
+    Previous
+  </button>
+  
+  <span className="pagination-info">
+    Page {currentPage} of {lastPage}
+  </span>
+
+  <button 
+    className="pagination-btn"
+    onClick={() => setCurrentPage(p => Math.min(lastPage, p + 1))}
+    disabled={currentPage === lastPage}
+  >
+    Next
+  </button>
+</div>
 
           <IonAlert
             isOpen={showAlert}

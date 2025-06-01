@@ -14,7 +14,7 @@ import {
   IonLabel,
   useIonViewWillEnter
 } from '@ionic/react';
-import './Tab2.css';
+import './Tab2.css';  // This should be after ionic imports
 import simaproLogo from '../assets/simapro2.png';
 import poto from '../assets/pp.png';
 import { useHistory } from 'react-router-dom';
@@ -246,13 +246,7 @@ const Tab2 = () => {
         </div>
 
         {/* Add Pagination Controls */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          gap: '10px', 
-          margin: '20px 0',
-          alignItems: 'center' 
-        }}>
+        <div className="pagination-container">
           <button 
             className="pagination-btn"
             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -261,7 +255,7 @@ const Tab2 = () => {
             Previous
           </button>
           
-          <span>
+          <span className="pagination-info">
             Page {currentPage} of {lastPage}
           </span>
 
