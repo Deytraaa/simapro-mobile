@@ -15,6 +15,8 @@ import {
   IonSelectOption,
   IonImg,
   IonLoading,
+  IonDatetime,
+  IonModal
 } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 import simaproLogo from '../assets/simapro2.png';
@@ -34,6 +36,8 @@ const TambahPenjualan = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: '' }); // State untuk notifikasi
+  const [showBilledDatePicker, setShowBilledDatePicker] = useState(false);
+  const [showPaidDatePicker, setShowPaidDatePicker] = useState(false);
   const history = useHistory();
 
   const token = localStorage.getItem('token') || '';
@@ -239,20 +243,52 @@ const TambahPenjualan = () => {
           <IonItem>
             <IonLabel position="stacked">Tanggal Tagihan</IonLabel>
             <IonInput
+              readonly
               placeholder="YYYY-MM-DD HH:mm:ss"
               value={billedDate}
-              onIonChange={(e) => setBilledDate(e.detail.value)}
+              onClick={() => setShowBilledDatePicker(true)}
             />
+            <IonModal isOpen={showBilledDatePicker}>
+              <IonContent>
+                <IonDatetime
+                  presentation="date-time"
+                  preferWheel={true}
+                  showDefaultButtons={true}
+                  onIonChange={e => {
+                    const date = new Date(e.detail.value);
+                    setBilledDate(date.toISOString().slice(0, 19).replace('T', ' '));
+                  }}
+                  onIonCancel={() => setShowBilledDatePicker(false)}
+                  onIonDismiss={() => setShowBilledDatePicker(false)}
+                />
+              </IonContent>
+            </IonModal>
           </IonItem>
 
           <IonItem>
             <IonLabel position="stacked">Tanggal Pembayaran</IonLabel>
             <IonInput
+              readonly
               placeholder="YYYY-MM-DD HH:mm:ss"
               value={paidDate}
-              onIonChange={(e) => setPaidDate(e.detail.value)}
+              onClick={() => setShowPaidDatePicker(true)}
               disabled={status !== 'P'}
             />
+            <IonModal isOpen={showPaidDatePicker}>
+              <IonContent>
+                <IonDatetime
+                  presentation="date-time"
+                  preferWheel={true}
+                  showDefaultButtons={true}
+                  onIonChange={e => {
+                    const date = new Date(e.detail.value);
+                    setPaidDate(date.toISOString().slice(0, 19).replace('T', ' '));
+                  }}
+                  onIonCancel={() => setShowPaidDatePicker(false)}
+                  onIonDismiss={() => setShowPaidDatePicker(false)}
+                />
+              </IonContent>
+            </IonModal>
           </IonItem>
 
           <div
