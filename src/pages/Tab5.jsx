@@ -120,11 +120,11 @@ const Tab5 = () => {
 
     const payload = {
       customerId: item.customerId,
-      product: item.product,
-      amount: item.amount,        // Keep this exactly as it was!
+      productId: item.productId,    // Changed from product to productId
+      amount: item.amount,        
       status: 'P',
-      billedDate: item.billedDate,
-      paidDate: formattedDate,
+      billedDate: item.billedDate,  // Use camelCase to match backend expectation
+      paidDate: formattedDate
     };
 
     try {
@@ -138,16 +138,25 @@ const Tab5 = () => {
         body: JSON.stringify(payload)
       });
 
-      if (!response.ok) throw new Error();
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error response:', errorData); // Add debug logging
+        throw new Error(errorData.message || 'Failed to update status');
+      }
 
       setData(prev =>
-        prev.map(d => (d.id === item.id ? { ...d, ...payload } : d))
+        prev.map(d => d.id === item.id ? {
+          ...d,
+          status: 'P',
+          paid_date: formattedDate
+        } : d)
       );
 
       setToastMessage("Status invoice berhasil diubah ke Paid");
       setToastColor("success");
       setShowToast(true);
-    } catch {
+    } catch (error) {
+      console.error('Error:', error); // Add error logging
       setToastMessage("Gagal mengubah status invoice");
       setToastColor("danger");
       setShowToast(true);
