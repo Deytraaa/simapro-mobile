@@ -55,9 +55,9 @@ ion-toolbar {
   
   .search-add {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    margin-bottom: 5px;
-    padding: auto;
+    margin-bottom: 20px;
   }
   
   .search-add input {
@@ -77,6 +77,19 @@ ion-toolbar {
     border-radius: 5px;
     padding: 0 16px;
     cursor: pointer;
+  }
+  
+  .button-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .export-button {
+    height: 40px;
+    --padding-start: 15px;
+    --padding-end: 15px;
+    font-weight: bold;
   }
   
   .product-table {
@@ -191,6 +204,19 @@ ion-toolbar {
     font-size: 28px;
     width: 100%;
     padding: 12px;
+  }
+}
+
+/* Adjust for mobile */
+@media (max-width: 768px) {
+  .search-add {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .button-group {
+    width: 100%;
+    justify-content: flex-end;
   }
 }
 

@@ -10,29 +10,32 @@ import {
   IonList,
   IonItem,
   IonLabel,
-  useIonViewWillEnter // Add this import
+  IonButton,
+  useIonViewWillEnter
 } from '@ionic/react';
 import './Tab1.css';
 import simaproLogo from '../assets/simapro2.png';
 import poto from '../assets/pp.png';
 import { useHistory } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { FaCheck } from 'react-icons/fa';
+import { utils as xlsxUtils, write as xlsxWrite } from 'xlsx';
+import { saveAs } from 'file-saver';
 
 const Tab5 = () => {
   const [data, setData] = useState([]);
   const [customers, setCustomers] = useState([]);
-  const [products, setProducts] = useState([]); // Add products state
+  const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
-  const [toastColor, setToastColor] = useState("success"); // hijau jika sukses
+  const [toastColor, setToastColor] = useState("success");
   const history = useHistory();
   const [showPopover, setShowPopover] = useState(false);
   const [popoverEvent, setPopoverEvent] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
-  const [perPage] = useState(15); // Items per page
+  const [perPage] = useState(15);
 
   const token = localStorage.getItem("token");
 
@@ -41,22 +44,15 @@ const Tab5 = () => {
     history.push("/login");
   };
 
-  // Add this hook to refresh data when entering the page
   useIonViewWillEnter(() => {
     fetchData();
     fetchCustomers();
     fetchProducts();
   });
 
-  // Add useEffect to fetch data when page changes
-  useEffect(() => {
-    fetchData();
-  }, [currentPage]); // This will trigger fetchData whenever currentPage changes
-
-  // Modify fetchData function
-  const fetchData = async () => {
+  const fetchData = async (page = 1) => {
     try {
-      const res = await fetch(`https://sazura.xyz/api/v1/invoices?page=${currentPage}`, {
+      const res = await fetch(`https://sazura.xyz/api/v1/invoices?page=${page}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
@@ -69,9 +65,7 @@ const Tab5 = () => {
         setLastPage(response.meta?.last_page || 1);
       }
     } catch (error) {
-      setToastMessage("Gagal mengambil data invoice");
-      setToastColor("danger");
-      setShowToast(true);
+      showErrorToast("Gagal mengambil data invoice");
     }
   };
 
@@ -88,13 +82,10 @@ const Tab5 = () => {
         setCustomers(response.data);
       }
     } catch (error) {
-      setToastMessage("Gagal mengambil data pelanggan");
-      setToastColor("danger");
-      setShowToast(true);
+      showErrorToast("Gagal mengambil data pelanggan");
     }
   };
 
-  // Add fetchProducts function
   const fetchProducts = async () => {
     try {
       const res = await fetch('https://sazura.xyz/api/v1/products', {
@@ -108,10 +99,14 @@ const Tab5 = () => {
         setProducts(response.data);
       }
     } catch (error) {
-      setToastMessage("Gagal mengambil data produk");
-      setToastColor("danger");
-      setShowToast(true);
+      showErrorToast("Gagal mengambil data produk");
     }
+  };
+
+  const showErrorToast = (message) => {
+    setToastMessage(message);
+    setToastColor("danger");
+    setShowToast(true);
   };
 
   const getCustomerName = (customerId) => {
@@ -119,7 +114,6 @@ const Tab5 = () => {
     return customer ? customer.name : 'Unknown';
   };
 
-  // Update the getProductName function to match getCustomerName's logic
   const getProductName = (productId) => {
     const product = products.find(p => Number(p.id) === Number(productId));
     return product ? product.name : 'Unknown';
@@ -133,10 +127,10 @@ const Tab5 = () => {
 
     const payload = {
       customerId: item.customerId,
-      productId: item.productId,    // Changed from product to productId
-      amount: item.amount,        
+      productId: item.productId,
+      amount: item.amount,
       status: 'P',
-      billedDate: item.billedDate,  // Use camelCase to match backend expectation
+      billedDate: item.billedDate,
       paidDate: formattedDate
     };
 
@@ -151,17 +145,13 @@ const Tab5 = () => {
         body: JSON.stringify(payload)
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Error response:', errorData); // Add debug logging
-        throw new Error(errorData.message || 'Failed to update status');
-      }
+      if (!response.ok) throw new Error();
 
       setData(prev =>
         prev.map(d => d.id === item.id ? {
           ...d,
           status: 'P',
-          paid_date: formattedDate
+          paidDate: formattedDate
         } : d)
       );
 
@@ -169,10 +159,7 @@ const Tab5 = () => {
       setToastColor("success");
       setShowToast(true);
     } catch (error) {
-      console.error('Error:', error); // Add error logging
-      setToastMessage("Gagal mengubah status invoice");
-      setToastColor("danger");
-      setShowToast(true);
+      showErrorToast("Gagal mengubah status invoice");
     }
   };
 
@@ -196,13 +183,69 @@ const Tab5 = () => {
       setToastColor("success");
       setShowToast(true);
     } catch {
-      setToastMessage("Gagal menghapus invoice");
-      setToastColor("danger");
-      setShowToast(true);
+      showErrorToast("Gagal menghapus invoice");
     }
   };
 
-  // Update the filtering logic to work with current page data
+  const exportToExcel = async () => {
+    try {
+      // 1. Fetch ALL invoices by paginating through all pages
+      let allInvoices = [];
+      let page = 1;
+      let hasMore = true;
+
+      while (hasMore) {
+        const res = await fetch(`https://sazura.xyz/api/v1/invoices?page=${page}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+        
+        const response = await res.json();
+        
+        if (response.data && response.data.length > 0) {
+          allInvoices = [...allInvoices, ...response.data];
+          page++;
+          hasMore = page <= (response.meta?.last_page || 1);
+        } else {
+          hasMore = false;
+        }
+      }
+
+      // 2. Format data for Excel
+      const excelData = allInvoices.map((item, index) => ({
+        'No.': index + 1,
+        'Nama Pelanggan': getCustomerName(item.customerId),
+        'Produk': getProductName(item.productId),
+        'Jumlah': item.amount,
+        'Status': item.status.toLowerCase() === 'p' ? 'Lunas' : 'Belum Lunas',
+        'Tanggal Tagihan': item.billedDate,
+        'Tanggal Pembayaran': item.paidDate || '-'
+      }));
+
+      // 3. Create Excel file
+      const worksheet = xlsxUtils.json_to_sheet(excelData);
+      const workbook = xlsxUtils.book_new();
+      xlsxUtils.book_append_sheet(workbook, worksheet, 'Invoices');
+
+      // 4. Generate and download
+      const excelBuffer = xlsxWrite(workbook, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([excelBuffer], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      });
+
+      saveAs(blob, `invoices_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+      setToastMessage("File Excel berhasil diunduh!");
+      setToastColor("success");
+      setShowToast(true);
+    } catch (error) {
+      console.error("Export error:", error);
+      showErrorToast("Gagal mengunduh file Excel");
+    }
+  };
+
   const filteredData = data
     .filter(item => getCustomerName(item.customerId).toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => getCustomerName(a.customerId).localeCompare(getCustomerName(b.customerId)));
@@ -262,9 +305,19 @@ const Tab5 = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <button className="add-button" onClick={() => history.push('/app/tambah-penjualan')}>
-              +
-            </button>
+            <div className="button-group">
+              <button className="add-button" onClick={() => history.push('/app/tambah-penjualan')}>
+                +
+              </button>
+              <IonButton
+                onClick={exportToExcel}
+                className="export-button"
+                fill="solid"
+                color="success"
+              >
+                Export Excel
+              </IonButton>
+            </div>
           </div>
 
           <div className="table-scroll-container">
@@ -329,7 +382,6 @@ const Tab5 = () => {
             </table>
           </div>
 
-          {/* Add Pagination Controls */}
           <div className="pagination-controls">
             <button 
               className="pagination-btn"
