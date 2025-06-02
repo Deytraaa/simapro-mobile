@@ -9,10 +9,8 @@ import {
 import React, { useState, useEffect } from 'react';
 import './profile.css';
 import simaproLogo from '../assets/simapro2.png';
-import poto from '../assets/pp.png';
 
 const Profile = () => {
-  const [image, setImage] = useState(null);
   const [nama, setNama] = useState('');
   const [email, setEmail] = useState('');
 
@@ -29,11 +27,6 @@ const Profile = () => {
       }
     }
   }, []);
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImage(URL.createObjectURL(file));
-  };
 
   const handleLogout = () => {
     // Hapus data login di localStorage dan redirect ke halaman login
@@ -60,25 +53,12 @@ const Profile = () => {
               <div className="app-subtitle">Sistem Manajemen Penjualan Produk</div>
             </div>
           </IonButtons>
-          <IonImg src={poto} className="profile-pic" slot="end" />
         </IonToolbar>
       </IonHeader>
 
       <IonContent fullscreen>
         <h2 className="profile-header">PROFILE</h2>
         <div className="profile-card">
-          <div className="profile-image-section">
-            <img
-              src={image || 'https://via.placeholder.com/100'}
-              alt="Profile"
-              className="profile-image"
-            />
-            <label className="choose-file-btn">
-              Pilih Foto
-              <input type="file" onChange={handleImageChange} hidden />
-            </label>
-          </div>
-
           <div className="form-group">
             <label>Nama :</label>
             <input

@@ -30,6 +30,9 @@ const Tab5 = () => {
   const history = useHistory();
   const [showPopover, setShowPopover] = useState(false);
   const [popoverEvent, setPopoverEvent] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [perPage] = useState(15); // Items per page
 
   const token = localStorage.getItem("token");
 
@@ -45,17 +48,25 @@ const Tab5 = () => {
     fetchProducts();
   });
 
+  // Add useEffect to fetch data when page changes
+  useEffect(() => {
+    fetchData();
+  }, [currentPage]); // This will trigger fetchData whenever currentPage changes
+
+  // Modify fetchData function
   const fetchData = async () => {
     try {
-      const res = await fetch('https://sazura.xyz/api/v1/invoices', {
+      const res = await fetch(`https://sazura.xyz/api/v1/invoices?page=${currentPage}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
         }
       });
       const response = await res.json();
-      if (Array.isArray(response.data)) {
+      
+      if (response.data) {
         setData(response.data);
+        setLastPage(response.meta?.last_page || 1);
       }
     } catch (error) {
       setToastMessage("Gagal mengambil data invoice");
@@ -191,6 +202,7 @@ const Tab5 = () => {
     }
   };
 
+  // Update the filtering logic to work with current page data
   const filteredData = data
     .filter(item => getCustomerName(item.customerId).toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => getCustomerName(a.customerId).localeCompare(getCustomerName(b.customerId)));
@@ -272,7 +284,7 @@ const Tab5 = () => {
               <tbody>
                 {filteredData.map((item, index) => (
                   <tr key={item.id}>
-                    <td>{index + 1}</td>
+                    <td>{((currentPage - 1) * perPage) + index + 1}</td>
                     <td>{getCustomerName(item.customerId)}</td>
                     <td>{getProductName(item.productId)}</td>
                     <td>{item.amount}</td>
@@ -316,6 +328,29 @@ const Tab5 = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Add Pagination Controls */}
+          <div className="pagination-controls">
+            <button 
+              className="pagination-btn"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+            
+            <span className="pagination-info">
+              Page {currentPage} of {lastPage}
+            </span>
+
+            <button 
+              className="pagination-btn"
+              onClick={() => setCurrentPage(p => Math.min(lastPage, p + 1))}
+              disabled={currentPage === lastPage}
+            >
+              Next
+            </button>
+          </div>
         </div>
 
         <IonToast
@@ -324,6 +359,7 @@ const Tab5 = () => {
           message={toastMessage}
           duration={2000}
           color={toastColor}
+          position="top"
         />
       </IonContent>
     </IonPage>

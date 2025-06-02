@@ -16,12 +16,12 @@ import {
   IonImg,
   IonLoading,
   IonDatetime,
-  IonModal
+  IonModal,
+  IonToast // Add this import
 } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 import simaproLogo from '../assets/simapro2.png';
 import poto from '../assets/pp.png';
-import NotificationBar from '../components/NotificationBar'; // Import notifikasi
 import './TambahProduk.css';
 
 const TambahPenjualan = () => {
@@ -35,7 +35,9 @@ const TambahPenjualan = () => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [notification, setNotification] = useState({ message: '', type: '' }); // State untuk notifikasi
+  const [showToast, setShowToast] = useState(false); // Replace notification state with toast states
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastColor, setToastColor] = useState('success');
   const [showBilledDatePicker, setShowBilledDatePicker] = useState(false);
   const [showPaidDatePicker, setShowPaidDatePicker] = useState(false);
   const history = useHistory();
@@ -60,7 +62,9 @@ const TambahPenjualan = () => {
         setCustomers(customersData.data || []);
         setProducts(productsData.data || []);
       } catch (err) {
-        setNotification({ message: err.message, type: 'error' });
+        setToastMessage(err.message);
+        setToastColor('danger');
+        setShowToast(true);
       } finally {
         setIsLoading(false);
       }
@@ -75,46 +79,29 @@ const TambahPenjualan = () => {
   // Update the handleSubmit function to match database columns
   const handleSubmit = async () => {
     if (!customerId || !productId || !amount || !status || !billedDate) {
-      setNotification({
-        message: 'Mohon lengkapi semua inputan.',
-        type: 'error',
-        show: true
-      });
+      setToastMessage('Mohon lengkapi semua inputan.');
+      setToastColor('danger');
+      setShowToast(true);
       return;
     }
 
     if (!isValidDateTime(billedDate)) {
-      setNotification({
-        message: 'Format Tanggal Tagihan salah. Gunakan format: YYYY-MM-DD HH:mm:ss',
-        type: 'error',
-        show: true
-      });
+      setToastMessage('Format Tanggal Tagihan salah. Gunakan format: YYYY-MM-DD HH:mm:ss');
+      setToastColor('danger');
+      setShowToast(true);
       return;
     }
 
     if (status === 'P' && (!paidDate || !isValidDateTime(paidDate))) {
-      setNotification({
-        message: 'Tanggal Pembayaran wajib diisi dan format harus benar jika status Lunas.',
-        type: 'error',
-        show: true
-      });
+      setToastMessage('Tanggal Pembayaran wajib diisi dan format harus benar jika status Lunas.');
+      setToastColor('danger');
+      setShowToast(true);
       return;
     }
-
-    const newInvoice = [{
-      customerId: Number(customerId),
-      productId: productId, // Keep as string, already converted in the select
-      amount: Number(amount),
-      status,
-      billedDate,
-      paidDate: status === 'P' ? paidDate : null,
-    }];
 
     setSubmitLoading(true);
 
     try {
-      console.log('Sending data:', newInvoice); // Debug log
-
       const res = await fetch('https://sazura.xyz/api/v1/invoices/bulk', {
         method: 'POST',
         headers: {
@@ -122,40 +109,39 @@ const TambahPenjualan = () => {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
         },
-        body: JSON.stringify(newInvoice)
+        body: JSON.stringify([{
+          customerId: Number(customerId),
+          productId: productId, // Keep as string, already converted in the select
+          amount: Number(amount),
+          status,
+          billedDate,
+          paidDate: status === 'P' ? paidDate : null,
+        }])
       });
-
-      const responseData = await res.json();
-      console.log('Response:', responseData);
 
       if (!res.ok) {
-        throw new Error(responseData.message || 'Gagal mengirim data');
+        throw new Error('Gagal mengirim data');
       }
 
-      setNotification({
-        message: 'Invoice berhasil ditambahkan!',
-        type: 'success',
-        show: true
-      });
-
-      setTimeout(() => {
-        history.push('/app/tab5');
-      }, 1500);
+      setToastMessage('Invoice berhasil ditambahkan!');
+      setToastColor('success');
+      setShowToast(true);
+      
+      // Remove setTimeout and directly navigate
+      history.push('/app/tab5'); // Changed from '/app/Tab5' to '/app/tab5'
 
     } catch (err) {
       console.error('Error:', err);
-      setNotification({
-        message: err.message || 'Terjadi kesalahan saat mengirim data',
-        type: 'error',
-        show: true
-      });
+      setToastMessage('Terjadi kesalahan saat mengirim data');
+      setToastColor('danger');
+      setShowToast(true);
     } finally {
       setSubmitLoading(false);
     }
   };
 
   const handleBatal = () => {
-    history.push('/app/Tab5');
+    history.push('/app/tab5'); // Changed from '/app/Tab5' to '/app/tab5'
   };
 
   return (
@@ -177,11 +163,13 @@ const TambahPenjualan = () => {
         <h2>TAMBAH PENJUALAN</h2>
 
         {/* Replace the existing NotificationBar */}
-        <NotificationBar
-          show={notification.show}
-          message={notification.message}
-          type={notification.type}
-          onClose={() => setNotification({ message: '', type: '', show: false })}
+        <IonToast
+          isOpen={showToast}
+          onDidDismiss={() => setShowToast(false)}
+          message={toastMessage}
+          duration={2000}
+          color={toastColor}
+          position="top"
         />
 
         <div className="form-container">

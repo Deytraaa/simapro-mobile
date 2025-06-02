@@ -249,6 +249,8 @@ ion-toolbar {
   flex-direction: column;
   align-items: center;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+  min-height: 400px; /* Set minimum height */
+  overflow: hidden; /* Prevent content overflow */
 }
 
 .chart-card h3 {
@@ -260,13 +262,36 @@ ion-toolbar {
 /* Chart Area */
 .chart-container {
   width: 100%;
-  height: 250px;
+  height: 300px;
+  position: relative; /* Add position relative */
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .chart-card {
     flex: 1 1 100%;
+    padding: 15px; /* Reduce padding on mobile */
+    min-height: 350px; /* Adjust minimum height for mobile */
+  }
+
+  .chart-container {
+    height: 250px; /* Reduce height on mobile */
+  }
+
+  /* Adjust chart text size on mobile */
+  .recharts-text {
+    font-size: 12px !important;
+  }
+
+  /* Adjust legend size on mobile */
+  .recharts-legend-wrapper {
+    font-size: 12px !important;
+    bottom: 0 !important;
+  }
+
+  /* Ensure tooltip stays within bounds */
+  .recharts-tooltip-wrapper {
+    max-width: 90%;
   }
 }
 
@@ -342,49 +367,58 @@ ion-toolbar {
   cursor: pointer;
 }
 
+/* Popover Styles */
 ion-popover {
-  --background: #f6aafb; /* Pink lembut */
+  --background: #f6aafb;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   padding: 8px 0;
 }
 
 ion-popover ion-list {
-  margin: 0;
+  font-weight: 500;
   padding: 0;
 }
 
-ion-popover ion-item {
-  --background: transparent;
-  color: #4a007f; /* Ungu gelap */
-  font-weight: 600;
-  --padding-start: 16px;
-  --padding-end: 16px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
 ion-popover ion-item:hover {
-  background-color: #e7c5ff; /* Hover warna ungu muda */
+  background-color: #e7c5ff;
 }
 
+/* Pagination Styles */
 .pagination-btn {
   padding: 8px 16px;
   background-color: #b69ef4;
   border: none;
   border-radius: 4px;
   color: white;
+  font-weight: 600;
   cursor: pointer;
-  font-weight: 500;
+  transition: background-color 0.2s ease;
 }
 
 .pagination-btn:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .pagination-btn:hover:not(:disabled) {
   background-color: #9f83e6;
+}
+
+/* Pagination Controls */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0;
+  padding: 10px;
+}
+
+.pagination-info {
+  color: #4c2a85;
+  font-weight: 600;
 }
 
 
