@@ -43,7 +43,7 @@ const Tab2 = () => {
     fetchCategories();
   });
 
-  // Update fetchData to handle pagination
+  // Fetch produk dengan pagination
   const fetchData = async () => {
     try {
       const response = await fetch(`https://sazura.xyz/api/v1/products?page=${currentPage}`, {
@@ -53,10 +53,10 @@ const Tab2 = () => {
         },
       });
       const result = await response.json();
-      
+
       if (Array.isArray(result.data)) {
         setData(result.data);
-        setLastPage(result.meta.last_page || 1);
+        setLastPage(result.meta?.last_page || 1);
       } else {
         console.error('Data produk tidak valid:', result);
       }
@@ -65,6 +65,7 @@ const Tab2 = () => {
     }
   };
 
+  // Fetch kategori produk
   const fetchCategories = () => {
     fetch('https://sazura.xyz/api/v1/categories', {
       headers: {
@@ -74,6 +75,7 @@ const Tab2 = () => {
     })
       .then(res => res.json())
       .then(response => {
+        console.log('Kategori API response:', response);
         if (Array.isArray(response.data)) {
           setCategories(response.data);
         } else {
@@ -83,8 +85,10 @@ const Tab2 = () => {
       .catch(error => console.error('Gagal fetch kategori:', error));
   };
 
+  // Cari nama kategori berdasarkan id kategori
   const getCategoryName = (categoryId) => {
-    const category = categories.find(cat => Number(cat.category_id) === Number(categoryId));
+    // Ganti cat.categoryId menjadi cat.id karena biasanya properti id kategori bernama "id"
+    const category = categories.find(cat => Number(cat.id) === Number(categoryId));
     return category ? category.name : 'Tidak diketahui';
   };
 
@@ -127,10 +131,10 @@ const Tab2 = () => {
     .filter(item => item.name.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  // Keep the pagination useEffect
+  // Re-fetch produk saat currentPage berubah
   useEffect(() => {
     fetchData();
-  }, [currentPage]); // Re-fetch when page changes
+  }, [currentPage]);
 
   return (
     <IonPage>
@@ -227,7 +231,7 @@ const Tab2 = () => {
                         {item.status === 'a' ? 'Aktif' : 'Nonaktif'}
                       </span>
                     </td>
-                    <td>{getCategoryName(item.category_id)}</td>
+                    <td>{getCategoryName(item.categoryId)}</td>
                     <td>
                       <button className="edit-btn" onClick={() => history.push(`/app/edit-produk/${item.id}`)}>
                         Edit
@@ -245,21 +249,21 @@ const Tab2 = () => {
           </div>
         </div>
 
-        {/* Add Pagination Controls */}
+        {/* Pagination Controls */}
         <div className="pagination-container">
-          <button 
+          <button
             className="pagination-btn"
             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
           >
             Previous
           </button>
-          
+
           <span className="pagination-info">
             Page {currentPage} of {lastPage}
           </span>
 
-          <button 
+          <button
             className="pagination-btn"
             onClick={() => setCurrentPage(p => Math.min(lastPage, p + 1))}
             disabled={currentPage === lastPage}
