@@ -21,6 +21,8 @@ import { useState } from 'react';
 import { FaCheck } from 'react-icons/fa';
 import { utils as xlsxUtils, write as xlsxWrite } from 'xlsx';
 import { saveAs } from 'file-saver';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+
 
 const Tab5 = () => {
   const [data, setData] = useState([]);
@@ -189,11 +191,10 @@ const Tab5 = () => {
 
   const exportToExcel = async () => {
     try {
-      // 1. Fetch ALL invoices by paginating through all pages
       let allInvoices = [];
       let page = 1;
       let hasMore = true;
-
+  
       while (hasMore) {
         const res = await fetch(`https://sazura.xyz/api/v1/invoices?page=${page}`, {
           headers: {
@@ -201,9 +202,9 @@ const Tab5 = () => {
             'Accept': 'application/json'
           }
         });
-        
+  
         const response = await res.json();
-        
+  
         if (response.data && response.data.length > 0) {
           allInvoices = [...allInvoices, ...response.data];
           page++;
@@ -212,8 +213,7 @@ const Tab5 = () => {
           hasMore = false;
         }
       }
-
-      // 2. Format data for Excel
+  
       const excelData = allInvoices.map((item, index) => ({
         'No.': index + 1,
         'Nama Pelanggan': getCustomerName(item.customerId),
@@ -223,28 +223,46 @@ const Tab5 = () => {
         'Tanggal Tagihan': item.billedDate,
         'Tanggal Pembayaran': item.paidDate || '-'
       }));
-
-      // 3. Create Excel file
+  
       const worksheet = xlsxUtils.json_to_sheet(excelData);
       const workbook = xlsxUtils.book_new();
       xlsxUtils.book_append_sheet(workbook, worksheet, 'Invoices');
-
-      // 4. Generate and download
+  
       const excelBuffer = xlsxWrite(workbook, { bookType: 'xlsx', type: 'array' });
-      const blob = new Blob([excelBuffer], { 
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      const blob = new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       });
-
-      saveAs(blob, `invoices_${new Date().toISOString().split('T')[0]}.xlsx`);
-
-      setToastMessage("File Excel berhasil diunduh!");
-      setToastColor("success");
-      setShowToast(true);
+  
+      // Konversi ke base64
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64data = reader.result.split(',')[1];
+  
+        const fileName = `invoices_${new Date().toISOString().split('T')[0]}.xlsx`;
+  
+        await Filesystem.writeFile({
+          path: fileName,
+          data: base64data,
+          directory: Directory.Documents, // Bisa juga Directory.Downloads
+          encoding: Encoding.BASE64
+        });
+  
+        setToastMessage("File Excel berhasil disimpan di folder Documents!");
+        setToastColor("success");
+        setShowToast(true);
+      };
+  
+      reader.onerror = () => {
+        showErrorToast("Gagal membaca file untuk konversi");
+      };
+  
+      reader.readAsDataURL(blob);
     } catch (error) {
       console.error("Export error:", error);
-      showErrorToast("Gagal mengunduh file Excel");
+      showErrorToast("Gagal menyimpan file Excel");
     }
   };
+  
 
   const filteredData = data
     .filter(item => getCustomerName(item.customerId).toLowerCase().includes(search.toLowerCase()))
