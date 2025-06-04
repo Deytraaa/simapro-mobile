@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Redirect, Route } from 'react-router-dom';
 import {
   IonApp,
@@ -47,19 +47,32 @@ import '@ionic/react/css/display.css';
 
 import { home, cube, person, cart, exit } from 'ionicons/icons';
 
+import { App as CapacitorApp } from '@capacitor/app';
+
 setupIonicReact();
 
 const App = () => {
   const [showExitAlert, setShowExitAlert] = useState(false);
 
-  const handleExitConfirm = () => {
-    // Logika keluar aplikasi:
-    // Untuk web, biasanya redirect ke halaman login:
-    window.location.href = '/login';
+  // === Back Button Handler ===
+  useEffect(() => {
+    const handler = (event) => {
+      event.detail.register(10, () => {
+        if (window.confirm('Yakin mau keluar?')) {
+          CapacitorApp.exitApp();
+        }
+      });
+    };
 
-    // Jika target platform mobile dengan Capacitor, bisa pakai:
-    // import { App } from '@capacitor/app';
-    // App.exitApp();
+    document.addEventListener('ionBackButton', handler);
+    return () => {
+      document.removeEventListener('ionBackButton', handler);
+    };
+  }, []);
+
+  const handleExitConfirm = () => {
+    CapacitorApp.exitApp(); // gunakan untuk app native
+    // window.location.href = '/login'; // alternatif untuk web
   };
 
   return (
