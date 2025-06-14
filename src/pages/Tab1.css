@@ -3,6 +3,7 @@ ion-toolbar {
     --color: white;
     --text-align: left;
     display: flex;
+    height: 90px;
     align-items: center;
   }
   
@@ -201,7 +202,7 @@ ion-toolbar {
   }
 
   .add-button {
-    font-size: 28px;
+    font-size: 20px;
     width: 100%;
     padding: 12px;
   }

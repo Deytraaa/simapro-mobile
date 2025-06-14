@@ -327,14 +327,12 @@ const Tab5 = () => {
               <button className="add-button" onClick={() => history.push('/app/tambah-penjualan')}>
                 +
               </button>
-              <IonButton
+              <button
+                className="add-button"
                 onClick={exportToExcel}
-                className="export-button"
-                fill="solid"
-                color="success"
               >
                 Export Excel
-              </IonButton>
+              </button>
             </div>
           </div>
 
