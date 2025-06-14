@@ -45,6 +45,8 @@ const Register = () => {
     password_confirmation: '',
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   const [isLoading, setIsLoading] = useState(false);
@@ -59,7 +61,8 @@ const Register = () => {
     if (!form.email) errs.email = 'Email wajib diisi';
     else if (!/\S+@\S+\.\S+/.test(form.email)) errs.email = 'Format email tidak valid';
     if (!form.password || form.password.length < 8) errs.password = 'Password minimal 8 karakter';
-    if (form.password !== form.password_confirmation) errs.password_confirmation = 'Konfirmasi password tidak cocok';
+    if (form.password !== form.password_confirmation)
+      errs.password_confirmation = 'Konfirmasi password tidak cocok';
     return errs;
   };
 
@@ -105,7 +108,7 @@ const Register = () => {
       });
 
       setTimeout(() => {
-        history.push('/'); // redirect ke halaman login
+        history.push('/');
       }, 2000);
     } catch (error) {
       setNotification({
@@ -157,23 +160,41 @@ const Register = () => {
             {errors.email && <span className="error">{errors.email}</span>}
 
             <label>Password:</label>
-            <input
-              type="password"
-              name="password"
-              placeholder="Masukan Password…"
-              value={form.password}
-              onChange={handleChange}
-            />
+            <div className="password-input-container">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                placeholder="Masukan Password…"
+                value={form.password}
+                onChange={handleChange}
+              />
+              <span
+                className="toggle-password"
+                onClick={() => setShowPassword(!showPassword)}
+                title={showPassword ? 'Sembunyikan' : 'Lihat'}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </span>
+            </div>
             {errors.password && <span className="error">{errors.password}</span>}
 
             <label>Konfirmasi Password:</label>
-            <input
-              type="password"
-              name="password_confirmation"
-              placeholder="Ulangi Password…"
-              value={form.password_confirmation}
-              onChange={handleChange}
-            />
+            <div className="password-input-container">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                name="password_confirmation"
+                placeholder="Ulangi Password…"
+                value={form.password_confirmation}
+                onChange={handleChange}
+              />
+              <span
+                className="toggle-password"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                title={showConfirmPassword ? 'Sembunyikan' : 'Lihat'}
+              >
+                {showConfirmPassword ? '🙈' : '👁️'}
+              </span>
+            </div>
             {errors.password_confirmation && (
               <span className="error">{errors.password_confirmation}</span>
             )}

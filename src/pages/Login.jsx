@@ -38,6 +38,7 @@ const Notification = ({ message, type, onClose }) => {
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
 
@@ -56,7 +57,6 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      // Login request
       const loginResponse = await fetch('https://sazura.xyz/api/login', {
         method: 'POST',
         headers: {
@@ -75,12 +75,10 @@ const Login = () => {
         throw new Error(loginData.message || 'Login gagal');
       }
 
-      // Store the token (for Laravel Sanctum, token ada di 'access_token' field)
       const token = loginData.access_token;
       localStorage.setItem('token', token);
       localStorage.setItem('isLoggedIn', 'true');
 
-      // Fetch user data
       const userResponse = await fetch('https://sazura.xyz/api/user', {
         method: 'GET',
         headers: {
@@ -95,7 +93,6 @@ const Login = () => {
         throw new Error(userData.message || 'Gagal mengambil data user');
       }
 
-      // Store user data
       localStorage.setItem('user', JSON.stringify(userData));
 
       setNotification({
@@ -105,7 +102,7 @@ const Login = () => {
       });
 
       setTimeout(() => {
-        history.push('/app/tab1'); // Ganti ke halaman utama aplikasi
+        history.push('/app/tab1');
       }, 1500);
     } catch (error) {
       console.error('Login error:', error);
@@ -136,6 +133,7 @@ const Login = () => {
           <div className="login-form">
             <h1 className="login-title">SIMAPRO</h1>
             <p className="login-subtitle">Sistem Manajemen Penjualan Produk</p>
+            
             <label>Email:</label>
             <input
               type="email"
@@ -143,16 +141,28 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
+            
             <label>Password:</label>
-            <input
-              type="password"
-              placeholder="Masukan Password…"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className="password-input-container">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Masukan Password…"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <span
+                onClick={() => setShowPassword(!showPassword)}
+                className="toggle-password"
+                title={showPassword ? 'Sembunyikan Password' : 'Lihat Password'}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </span>
+            </div>
+
             <div className="forgot-password">
               <a href="/register">Belum punya akun? Daftar</a>
             </div>
+
             <button 
               className="login-button" 
               onClick={handleLogin}
